@@ -1,0 +1,39 @@
+stages:
+  - assemble
+  - lint
+
+.gradle:
+  image: gradle:jdk17
+  variables:
+    GRADLE: gradle --no-daemon --gradle-user-home .gradle -Pversion=$CI_COMMIT_TAG
+  cache:
+    paths:
+      - build
+
+assemble:
+  extends: .gradle
+  stage: assemble
+  script: $GRADLE assemble
+  after_script:
+    - mkdir libs
+    - cp */build/libs/*.jar .
+  cache:
+    policy: push
+  artifacts:
+    paths:
+      - '**.jar'
+    expire_in: 1d
+
+qodana:
+  image:
+    name: jetbrains/qodana-jvm-community
+    entrypoint: [ '' ]
+  stage: lint
+  script:
+    - /opt/idea/bin/entrypoint --results-dir=$CI_PROJECT_DIR/qodana --save-report --report-dir=$CI_PROJECT_DIR/qodana/report
+  artifacts:
+    when: always
+    paths:
+      - qodana/report/
+    expose_as: 'Qodana report'
+    expire_in: 1d
