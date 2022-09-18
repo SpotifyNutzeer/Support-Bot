@@ -2,7 +2,6 @@ package dev.spotifynutzer.supportbot
 
 import dev.spotifynutzer.supportbot.bot.BotBuilder
 import dev.spotifynutzer.supportbot.configuration.ConfigProvider
-import dev.spotifynutzer.supportbot.configuration.Configuration
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -15,7 +14,7 @@ class SupportBot {
   private val mainConfigurationFile: File = File("config.json")
   private val logger: Logger = LoggerFactory.getLogger(SupportBot::class.java)
 
-  private var mainConfiguration: Configuration = Configuration()
+  private val mainConfiguration: MutableMap<String, Any>
 
   init {
 
@@ -25,13 +24,12 @@ class SupportBot {
       setupConfiguration()
     }
 
-    mainConfiguration = ConfigProvider.getConfigFromFile(mainConfigurationFile) ?: Configuration()
+    mainConfiguration = ConfigProvider.getConfigFromFile(mainConfigurationFile) ?: HashMap()
 
     if (mainConfiguration.isEmpty()) {
       logger.error("Configuration is empty, filling in default values...")
       setupConfiguration()
     }
-
 
     token = mainConfiguration["token"] as String
 
@@ -42,8 +40,6 @@ class SupportBot {
   private fun setupConfiguration() {
     mainConfiguration["token"] = ""
     mainConfiguration["devmode"] = false
-
-    mainConfiguration.config.forEach { logger.debug("Key: ${it.key} | Value: ${it.value}") }
 
     ConfigProvider.saveConfig(mainConfigurationFile, mainConfiguration)
     logger.info("Exiting...")

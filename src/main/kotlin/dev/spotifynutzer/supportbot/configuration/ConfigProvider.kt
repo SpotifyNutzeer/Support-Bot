@@ -12,23 +12,21 @@ import java.io.IOException
  */
 object ConfigProvider {
 
-  private var configuration: Configuration = Configuration()
   private val objectMapper: ObjectMapper = ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
 
   @Throws(ConfigurationException::class, IOException::class)
-  fun saveConfig(file: File, configuration: Configuration) {
-    println(objectMapper.writer().writeValueAsString(configuration.config))
-    objectMapper.writeValue(file, configuration.config)
+  fun saveConfig(file: File, configuration: MutableMap<String, Any>) {
+    objectMapper.writeValue(file, configuration)
   }
 
   @Throws(IOException::class)
-  fun getConfigFromFile(file: File): Configuration? {
+  fun getConfigFromFile(file: File): MutableMap<String, Any>? {
 
     val map = objectMapper.readValue(file,
       MutableMap::class.java)
 
     map.tryCast<MutableMap<String, Any>> {
-      return Configuration(this)
+      return this
     }
 
     return null
